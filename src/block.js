@@ -1,5 +1,6 @@
+// Import block
+const { log16 } = require("./utility");
 const crypto = require('crypto'), SHA256 = message => crypto.createHash("sha256").update(message).digest("hex");
-const {log16} = require("./utility");
 
 class Block {
     constructor(timestamp = "", data = []) {
@@ -23,6 +24,11 @@ class Block {
             this.hash = this.getHash();
         }
     }
+
+    hasValidTransaction(chain) {
+        return this.data.every(transaction => transaction.isValid(transaction, chain));
+    }
 }
 
+// Export block
 module.exports = {Block};
