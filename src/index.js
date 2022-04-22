@@ -1,5 +1,5 @@
 // Import block
-const { Block } = require("./block");
+// const { Block } = require("./block");
 const { Blockchain } = require("./blockchain");
 const { Transaction } = require("./transaction");
 const EC = require("elliptic").ec, ec = new EC("secp256k1"); 

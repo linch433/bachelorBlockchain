@@ -1,6 +1,6 @@
 // Import block
 const { Block } = require("./block");
-const { log16 } = require("./utility");
+// const { log16 } = require("./utility");
 const { Transaction } = require("./transaction");
 const EC = require("elliptic").ec, ec = new EC("secp256k1"); 
 
@@ -8,7 +8,7 @@ const EC = require("elliptic").ec, ec = new EC("secp256k1");
 const MINT_KEY_PAIR = ec.genKeyPair();
 const MINT_PUBLIC_ADDRESS = MINT_KEY_PAIR.getPublic("hex");
 const holderKeyPair = ec.genKeyPair();
-const crypto = require('crypto'), SHA256 = message => crypto.createHash("sha256").update(message).digest("hex");
+// const crypto = require('crypto'), SHA256 = message => crypto.createHash("sha256").update(message).digest("hex");
 
 class Blockchain {
     constructor() {
