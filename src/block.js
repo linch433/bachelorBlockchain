@@ -1,37 +1,44 @@
 // Import block
-const { log16 } = require("./utility");
+const { Transaction } = require("./transaction");
+// const { log16 } = require("./utility");
 const crypto = require('crypto'), SHA256 = message => crypto.createHash("sha256").update(message).digest("hex");
 const EC = require("elliptic").ec, ec = new EC("secp256k1"); 
-const MINT_KEY_PAIR = ec.genKeyPair();
+const MINT_PRIVATE_ADDRESS = "0700a1ad28a20e5b2a517c00242d3e25a88d84bf54dce9e1733e6096e6d6495e";
+const MINT_KEY_PAIR = ec.keyFromPrivate(MINT_PRIVATE_ADDRESS, "hex");
 const MINT_PUBLIC_ADDRESS = MINT_KEY_PAIR.getPublic("hex");
 
 class Block {
-    constructor(timestamp = "", data = []) {
+    constructor(timestamp = new Date(Date.now).toLocaleString(), data = []) {
         this.timestamp = timestamp;
         this.data = data;
-        this.hash = this.getHash();
+        this.hash = Block.getHash(this);
         this.prevHash = "";
         this.nonce = 0;
     }
 
-    getHash() {
-        return SHA256(this.prevHash + this.timestamp + JSON.stringify(this.data) + this.nonce);
+    static getHash(block) {
+        return SHA256(block.prevHash + block.timestamp + JSON.stringify(block.data) + block.nonce);
     }
 
     mine(difficulty) {
 
         // loops until hash start with the string 0...000 with length of {difficulty}
         // Bitcoin require 8 zeros by default, but this require a lot of time to generate new block (cause u need to randomize new eight zeros)
-        while (!this.hash.startsWith("0001" + Array(Math.round(log16(difficulty)) + 1).join("0"))) {
+        // but if u put 8 zeros before hash for PoW consensus it will take a long time to generate this combination -> around 10 minutes
+        
+        // ERROR: while (!this.hash.startsWith("0f0" + Array(Math.floor(log16(difficulty)) + 1).join("0"))) {
+        // ERROR: Invalid array length if I have more than 4 new generated blocks
+
+            while(!this.hash.startsWith("0f01" + Array(difficulty + 1).join("0"))) {
             this.nonce ++;
-            this.hash = this.getHash();
+            this.hash = Block.getHash(this);
         }
     }
 
-    hasValidTransaction(chain) {
+    static hasValidTransaction(block, chain) {
         let gas = 0, reward = 0;
 
-        this.data.forEach(transaction => {
+        block.data.forEach(transaction => {
             if (transaction.from !== MINT_PUBLIC_ADDRESS) {
                 gas += transaction.gas;
             } else {
@@ -42,8 +49,8 @@ class Block {
 
         return (
             reward - gas === chain.reward &&
-            this.data.every(transaction => transaction.isValid(transaction, chain)) &&
-            this.data.filter(transaction => transaction.from === MINT_PUBLIC_ADDRESS).length === 1
+            block.data.every(transaction => Transaction.isValid(transaction, chain)) &&
+            block.data.filter(transaction => transaction.from === MINT_PUBLIC_ADDRESS).length === 1
         );
     }
 }
