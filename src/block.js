@@ -3,6 +3,7 @@ const { Transaction } = require("./transaction");
 // const { log16 } = require("./utility");
 const crypto = require('crypto'), SHA256 = message => crypto.createHash("sha256").update(message).digest("hex");
 const EC = require("elliptic").ec, ec = new EC("secp256k1"); 
+
 const MINT_PRIVATE_ADDRESS = "0700a1ad28a20e5b2a517c00242d3e25a88d84bf54dce9e1733e6096e6d6495e";
 const MINT_KEY_PAIR = ec.keyFromPrivate(MINT_PRIVATE_ADDRESS, "hex");
 const MINT_PUBLIC_ADDRESS = MINT_KEY_PAIR.getPublic("hex");
@@ -29,7 +30,7 @@ class Block {
         // ERROR: while (!this.hash.startsWith("0f0" + Array(Math.floor(log16(difficulty)) + 1).join("0"))) {
         // ERROR: Invalid array length if I have more than 4 new generated blocks
 
-            while(!this.hash.startsWith("0f01" + Array(difficulty + 1).join("0"))) {
+            while(!this.hash.startsWith("000" + Array(difficulty + 1).join("0"))) {
             this.nonce ++;
             this.hash = Block.getHash(this);
         }
@@ -46,14 +47,14 @@ class Block {
             }
         });
 
-
         return (
             reward - gas === chain.reward &&
-            block.data.every(transaction => Transaction.isValid(transaction, chain)) &&
+            block.data.every(transaction => Transaction.isValid(transaction, chain)) && 
             block.data.filter(transaction => transaction.from === MINT_PUBLIC_ADDRESS).length === 1
         );
     }
 }
+
 
 // Export block
 module.exports = {Block};

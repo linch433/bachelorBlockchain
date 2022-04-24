@@ -21,13 +21,13 @@ class Transaction {
     }
 
     static isValid(tx, chain) {
-        return (
+        return ( 
             tx.from && 
             tx.to && 
             tx.amount && 
             (chain.getBalance(tx.from) >= tx.amount + tx.gas || tx.from === MINT_PUBLIC_ADDRESS) && 
             ec.keyFromPublic(tx.from, "hex").verify(SHA256(tx.from + tx.to + tx.amount + tx.gas), tx.signature)
-        );
+        )
     }
 }
 

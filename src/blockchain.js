@@ -8,12 +8,11 @@ const EC = require("elliptic").ec, ec = new EC("secp256k1");
 const MINT_PRIVATE_ADDRESS = "0700a1ad28a20e5b2a517c00242d3e25a88d84bf54dce9e1733e6096e6d6495e";
 const MINT_KEY_PAIR = ec.keyFromPrivate(MINT_PRIVATE_ADDRESS, "hex");
 const MINT_PUBLIC_ADDRESS = MINT_KEY_PAIR.getPublic("hex");
-const holderKeyPair = ec.genKeyPair();
 // const crypto = require('crypto'), SHA256 = message => crypto.createHash("sha256").update(message).digest("hex");
 
 class Blockchain {
     constructor() {
-        const initialCoinRelease = new Transaction(MINT_PUBLIC_ADDRESS, holderKeyPair.getPublic("hex"), 100000);
+        const initialCoinRelease = new Transaction(MINT_PUBLIC_ADDRESS, "04719af634ece3e9bf00bfd7c58163b2caf2b8acd1a437a3e99a093c8dd7b1485c20d8a4c9f6621557f1d583e0fcff99f3234dd1bb365596d1d67909c270c16d64", 100000);
         
         // for genesis block
         this.transactions = [];
@@ -80,26 +79,22 @@ class Blockchain {
         return balance;
     }
 
-    static isValid(blockchain = this) {
-
-        for(let i = 1; i < blockchain.chain.length; i++) {
+    static isValid(blockchain) {
+        for (let i = 1; i < blockchain.chain.length; i++) {
             const currentBlock = blockchain.chain[i];
             const prevBlock = blockchain.chain[i-1];
 
-            // Check validation, without any unpredictable errors
             if (
-                currentBlock.hash !== currentBlock.getHash(currentBlock) || 
+                currentBlock.hash !== Block.getHash(currentBlock) || 
                 prevBlock.hash !== currentBlock.prevHash || 
-                !Block.hasValidTransaction(currentBlock, blockchain)
-                ) {
+                !Block.hasValidTransactions(currentBlock, blockchain)
+            ) {
                 return false;
             }
         }
-        
+
         return true;
     }
 }
 
-
-// Exports block
 module.exports = {Blockchain};
