@@ -1,24 +1,25 @@
 /* eslint-disable no-case-declarations */
-// import block
 const crypto = require("crypto"), SHA256 = message => crypto.createHash("sha256").update(message).digest("hex");
+const EC = require("elliptic").ec, ec = new EC("secp256k1");
 const { Block } = require("./block");
 const { Transaction } = require("./transaction");
 const { Blockchain } = require("./blockchain");
 const { testCoin } = require("./index");
-const EC = require("elliptic").ec, ec = new EC("secp256k1");
 
-// mint addresses
 const MINT_PRIVATE_ADDRESS = "0700a1ad28a20e5b2a517c00242d3e25a88d84bf54dce9e1733e6096e6d6495e";
 const MINT_KEY_PAIR = ec.keyFromPrivate(MINT_PRIVATE_ADDRESS, "hex");
 const MINT_PUBLIC_ADDRESS = MINT_KEY_PAIR.getPublic("hex");
 
-// key pair
-const privateKey = process.env.PRIVATE_KEY || "62d101759086c306848a0c1020922a78e8402e1330981afe9404d0ecc0a4be3d";
+const privateKey = "62d101759086c306848a0c1020922a78e8402e1330981afe9404d0ecc0a4be3d";
 const keyPair = ec.keyFromPrivate(privateKey, "hex");
 const publicKey = keyPair.getPublic("hex");
 
-// websocket
 const WS = require("ws");
+
+const PORT = 3000;
+const PEERS = [];
+const MY_ADDRESS = "ws://localhost:3000";
+const server = new WS.Server({ port: PORT });
 
 let opened = [], connected = [];
 let check = [];
@@ -26,13 +27,7 @@ let checked = [];
 let checking = false;
 let tempChain = new Blockchain();
 
-
-const PORT = process.env.PORT || 3000;
-const PEERS = process.env.PEERS ? process.env.PEERS.split(",") : [];
-const MY_ADDRESS = process.env.MY_ADDRESS || "ws://localhost:3000";
-const server = new WS.Server({port: PORT});
-
-console.log("Listening on PORT: ", PORT);
+console.log("Listening on PORT", PORT);
 
 server.on("connection", async (socket, req) => {
     socket.on("message", message => {
@@ -133,10 +128,10 @@ server.on("connection", async (socket, req) => {
                     tempChain.chain.push(block);
                 } else {
                     tempChain.chain.push(block);
-                    if (testCoin.isValid(tempChain)) {
+                    if (Blockchain.isValid(tempChain)) {
                         testCoin.chain = tempChain.chain;
                     }
-                    tempChain = new testCoin();
+                    tempChain = new Blockchain();
                 }
 
                 break;
@@ -203,17 +198,16 @@ async function connect(address) {
 }
 
 function produceMessage(type, data) {
-    return { type, data };
+	return { type, data };
 }
 
 function sendMessage(message) {
-    opened.forEach(node => {
-        node.socket.send(JSON.stringify(message));
-    });
+	opened.forEach(node => {
+		node.socket.send(JSON.stringify(message));
+	})
 }
 
-// for error handling
-process.on("uncaughtException", err => console.log("error"));
+process.on("uncaughtException", err => console.log(err));
 
 PEERS.forEach(peer => connect(peer));
 
@@ -229,10 +223,9 @@ setTimeout(() => {
 }, 5000);
 
 setTimeout(() => {
-    console.log(opened);
-    console.log(testCoin);
+	console.log(opened);
+	console.log(testCoin);
 }, 10000);
-
 
 
 

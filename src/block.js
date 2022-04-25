@@ -1,6 +1,7 @@
+"use strict";
+
 // Import block
 const { Transaction } = require("./transaction");
-// const { log16 } = require("./utility");
 const crypto = require('crypto'), SHA256 = message => crypto.createHash("sha256").update(message).digest("hex");
 const EC = require("elliptic").ec, ec = new EC("secp256k1"); 
 
@@ -57,4 +58,4 @@ class Block {
 
 
 // Export block
-module.exports = {Block};
+module.exports = { Block };
